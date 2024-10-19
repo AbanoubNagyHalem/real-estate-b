@@ -4,25 +4,12 @@ import crypto from "crypto";
 import User from "../db/models/user.model.js";
 import nodemailer from "nodemailer";
 import Joi from "joi";
+import { loginValidation } from "../validation/loginValidation.js";
+import { registerValidation } from "../validation/registerValidation.js";
 
 // Register
 export const registerUser = async (req, res) => {
-  const schema = Joi.object({
-    username: Joi.string().min(3).required(),
-    email: Joi.string().email().required(),
-    password: Joi.string().min(6).required(),
-    confirmPassword: Joi.string()
-      .valid(Joi.ref("password"))
-      .required()
-      .messages({
-        "any.only": "Passwords do not match",
-      }),
-    phoneNumber: Joi.string()
-      .pattern(/^[0-9]{10,15}$/)
-      .required(),
-  });
-
-  const { error } = schema.validate(req.body);
+  const { error } = registerValidation.validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
   const { username, email, password, phoneNumber } = req.body;
@@ -50,12 +37,7 @@ export const registerUser = async (req, res) => {
 
 // Login
 export const loginUser = async (req, res) => {
-  const schema = Joi.object({
-    email: Joi.string().email().required(),
-    password: Joi.string().required(),
-  });
-
-  const { error } = schema.validate(req.body);
+  const { error } = loginValidation.validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
   const { email, password } = req.body;
@@ -77,7 +59,6 @@ export const loginUser = async (req, res) => {
     res.status(500).send("Server Error");
   }
 };
-
 
 // Forget Password - Send OTP
 export const forgetPassword = async (req, res) => {
