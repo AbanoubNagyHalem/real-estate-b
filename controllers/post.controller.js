@@ -210,11 +210,11 @@ export const deletePost = async (req, res) => {
 
 export const addComment = async (req, res) => {
   try {
-    const { text } = req.body; // Extract comment text from the request body
-    const postId = req.params.id; // Extract postId from the request parameters
+    const { text } = req.body;  // Extract comment text from the request body
+    const postId = req.params.id;  // Extract postId from the request parameters
     console.log(req.user);
-
-    const userId = req.user.id; // Extract userId from the authenticated user
+    
+    const userId = req.user.id;  // Extract userId from the authenticated user
     // Validate that the comment text is not empty or null
     if (!text || text.trim() === "") {
       return res.status(400).json({ message: "Comment cannot be empty." });
@@ -234,16 +234,13 @@ export const addComment = async (req, res) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    res
-      .status(200)
-      .json({ message: "Comment added successfully", post: updatedPost });
-  } catch (error) {
+    res.status(200).json({ message: "Comment added successfully", post: updatedPost });
+    } catch (error) {
     console.error("Error adding comment:", error); // Log the entire error for more context
-    res
-      .status(500)
-      .json({ message: "Failed to add comment", error: error.message });
-  }
+    res.status(500).json({ message: "Failed to add comment", error: error.message });
+    }
 };
+
 
 // Filter Posts
 export const getFilteredPosts = async (req, res) => {
@@ -295,35 +292,54 @@ export const getFilteredPosts = async (req, res) => {
 export const getUserReviews = async (req, res) => {
   try {
     const userId = req.user.id; // Get user ID from the authenticated user
-    const posts = await Post.find({ "comments.user": userId }) // Find posts with the user's comments
-      .populate("comments.user", "username") // Populate the username for each comment
+    const posts = await Post.find({ 'comments.user': userId }) // Find posts with the user's comments
+      .populate('comments.user', 'username') // Populate the username for each comment
       .exec();
 
     // Log posts to check their structure
-    console.log("Posts:", posts);
+    console.log('Posts:', posts);
 
-    const userComments = posts.flatMap((post) => {
+    const userComments = posts.flatMap(post => {
       if (!post.comments) return []; // Check if comments exist
       return post.comments
-        .filter(
-          (comment) => comment.user && comment.user._id.toString() === userId
-        ) // Ensure comment.user exists
-        .map((comment) => ({
+        .filter(comment => comment.user && comment.user._id.toString() === userId) // Ensure comment.user exists
+        .map(comment => ({
           postId: post._id,
           postTitle: post.title,
           comment: comment.text,
+          commentId: comment._id,
           commentDate: comment.createdAt,
         }));
     });
 
     if (userComments.length === 0) {
-      return res.status(200).json({ message: "No reviews found" });
+      return res.status(200).json({ message: 'No reviews found' });
     }
 
     res.status(200).json(userComments);
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error fetching reviews", error: error.message });
+    res.status(500).json({ message: 'Error fetching reviews', error: error.message });
+  }
+};
+
+export const deleteUserReview = async (req, res) => {
+  const { postId, commentId } = req.params;
+  
+  try {
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    post.comments = post.comments.filter(
+      (comment) => comment._id.toString() !== commentId
+    );
+
+    // Only update the comments field
+    await post.save({ validateModifiedOnly: true }); // Validates only modified fields
+
+    res.status(200).json({ message: 'Comment deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
   }
 };

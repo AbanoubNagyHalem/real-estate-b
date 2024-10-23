@@ -15,6 +15,7 @@ router.post("/", authenticate, postController.addPost);
 router.patch("/:id", authenticate, postController.updatePost);
 router.delete("/:id", authenticate, postController.deletePost);
 router.post("/:id/comments", authenticate, postController.addComment);
-router.get("/user/reviews", authenticate, postController.getUserReviews);
+router.get('/user/reviews', authenticate, postController.getUserReviews);
+router.delete("/:postId/comments/:commentId",authenticate , postController.deleteUserReview)
 
 export default router;

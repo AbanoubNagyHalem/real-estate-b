@@ -1,4 +1,11 @@
 import mongoose from "mongoose";
+const commentSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  text: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },
+  _id: { type: mongoose.Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId() }, // Unique ID for each comment
+});
+
 const postSchema = new mongoose.Schema({
   title: { type: String, required: true },
   desc: { type: String, required: true },
@@ -27,7 +34,7 @@ const postSchema = new mongoose.Schema({
     enum: ["published", "sold", "under review"],
   },
   amenites: {
-    type: [String],
+    type: String,
     enum: [
       "air condtion",
       "heating",
@@ -49,13 +56,7 @@ const postSchema = new mongoose.Schema({
   },
   featured: { type: Boolean },
   createdAt: { type: Date, default: Date.now },
-  comments: [
-    {
-      user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-      text: { type: String, required: true },
-      createdAt: { type: Date, default: Date.now },
-    },
-  ],
+  comments: [commentSchema],
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 });
 
