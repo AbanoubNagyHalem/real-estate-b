@@ -13,6 +13,23 @@ export const getAllPosts = async (req, res) => {
   }
 };
 
+export const getUserPosts = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const posts = await Post.find({ userId });
+
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({ message: "No posts found for this user." });
+    }
+
+    res.status(200).json(posts);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "An error occurred while retrieving posts.", error });
+  }
+};
+
 // Get post details by ID
 export const getPostDetails = async (req, res) => {
   const { id } = req.params;
@@ -114,6 +131,9 @@ export const addPost = async (req, res) => {
     longitude,
     type,
     property,
+    amenites,
+    location,
+    sqft,
   } = req.body;
 
   try {
@@ -130,6 +150,9 @@ export const addPost = async (req, res) => {
       longitude,
       type,
       property,
+      amenites,
+      location,
+      sqft,
       userId: req.user.id,
     });
 
@@ -148,7 +171,7 @@ export const updatePost = async (req, res) => {
   try {
     const updatedPost = await Post.findByIdAndUpdate(id, updates, {
       new: true,
-      runValidators: true, // Ensure validators are applied
+      runValidators: true,
     });
 
     if (!updatedPost) {
@@ -187,11 +210,11 @@ export const deletePost = async (req, res) => {
 
 export const addComment = async (req, res) => {
   try {
-    const { text } = req.body;  // Extract comment text from the request body
-    const postId = req.params.id;  // Extract postId from the request parameters
+    const { text } = req.body; // Extract comment text from the request body
+    const postId = req.params.id; // Extract postId from the request parameters
     console.log(req.user);
-    
-    const userId = req.user.id;  // Extract userId from the authenticated user
+
+    const userId = req.user.id; // Extract userId from the authenticated user
     // Validate that the comment text is not empty or null
     if (!text || text.trim() === "") {
       return res.status(400).json({ message: "Comment cannot be empty." });
@@ -211,11 +234,15 @@ export const addComment = async (req, res) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    res.status(200).json({ message: "Comment added successfully", post: updatedPost });
-    } catch (error) {
+    res
+      .status(200)
+      .json({ message: "Comment added successfully", post: updatedPost });
+  } catch (error) {
     console.error("Error adding comment:", error); // Log the entire error for more context
-    res.status(500).json({ message: "Failed to add comment", error: error.message });
-    }
+    res
+      .status(500)
+      .json({ message: "Failed to add comment", error: error.message });
+  }
 };
 
 // Filter Posts
@@ -268,18 +295,20 @@ export const getFilteredPosts = async (req, res) => {
 export const getUserReviews = async (req, res) => {
   try {
     const userId = req.user.id; // Get user ID from the authenticated user
-    const posts = await Post.find({ 'comments.user': userId }) // Find posts with the user's comments
-      .populate('comments.user', 'username') // Populate the username for each comment
+    const posts = await Post.find({ "comments.user": userId }) // Find posts with the user's comments
+      .populate("comments.user", "username") // Populate the username for each comment
       .exec();
 
     // Log posts to check their structure
-    console.log('Posts:', posts);
+    console.log("Posts:", posts);
 
-    const userComments = posts.flatMap(post => {
+    const userComments = posts.flatMap((post) => {
       if (!post.comments) return []; // Check if comments exist
       return post.comments
-        .filter(comment => comment.user && comment.user._id.toString() === userId) // Ensure comment.user exists
-        .map(comment => ({
+        .filter(
+          (comment) => comment.user && comment.user._id.toString() === userId
+        ) // Ensure comment.user exists
+        .map((comment) => ({
           postId: post._id,
           postTitle: post.title,
           comment: comment.text,
@@ -288,11 +317,13 @@ export const getUserReviews = async (req, res) => {
     });
 
     if (userComments.length === 0) {
-      return res.status(200).json({ message: 'No reviews found' });
+      return res.status(200).json({ message: "No reviews found" });
     }
 
     res.status(200).json(userComments);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching reviews', error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching reviews", error: error.message });
   }
 };

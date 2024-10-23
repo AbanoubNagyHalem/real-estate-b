@@ -5,6 +5,7 @@ import { authenticate } from "../middleware/authentication.js";
 const router = Router();
 
 router.get("/", postController.getAllPosts);
+router.get("/user", authenticate, postController.getUserPosts);
 router.get("/user/favourite", authenticate, postController.getAllFavourite);
 router.post("/user/favourite", authenticate, postController.addFavourites);
 router.delete("/user/favourite", authenticate, postController.removeFavourites);
@@ -14,6 +15,6 @@ router.post("/", authenticate, postController.addPost);
 router.patch("/:id", authenticate, postController.updatePost);
 router.delete("/:id", authenticate, postController.deletePost);
 router.post("/:id/comments", authenticate, postController.addComment);
-router.get('/user/reviews', authenticate, postController.getUserReviews);
+router.get("/user/reviews", authenticate, postController.getUserReviews);
 
 export default router;

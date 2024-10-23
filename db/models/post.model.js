@@ -27,7 +27,7 @@ const postSchema = new mongoose.Schema({
     enum: ["published", "sold", "under review"],
   },
   amenites: {
-    type: String,
+    type: [String],
     enum: [
       "air condtion",
       "heating",
