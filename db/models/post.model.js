@@ -5,29 +5,47 @@ const postSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   images: [{ type: String }],
   address: { type: String, required: true },
-  city: { type: String, required: true },
+  location: { type: String, required: false },
   bedroom: { type: Number, required: true },
   bathroom: { type: Number, required: true },
-  latitude: { type: String, required: true },
-  longitude: { type: String, required: true },
-  sqft: { type: Number, required: true },
+  latitude: { type: String, required: false},
+  longitude: { type: String, required: false },
+  sqft: { type: Number, required: false },
   type: { type: String, enum: ["buy", "rent"], required: true },
   property: {
     type: String,
     enum: ["apartment", "house", "villa", "studio"],
     required: true,
   },
-  location: {
+
+  city: {
     type: String,
-    enum: ["london", "sydney", "new gersy"],
-    required: true,
+    enum: [ "cairo",
+      "alexandria",
+      "giza",
+      "port said",
+      "suez",
+      "luxor",
+      "aswan",
+      "tanta",
+      "ismailia",
+      "mansoura",
+      "zagazig",
+      "faiyum",
+      "qena",
+      "sohag",
+      "minya",
+      "damietta",
+      "assiut",
+  ],
+    required: false,
   },
   Status: {
     type: String,
     enum: ["published", "sold", "under review"],
   },
   amenites: {
-    type: String,
+    type: [String],
     enum: [
       "air condtion",
       "heating",
@@ -59,4 +77,4 @@ const postSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 });
 
-export default mongoose.model("Post", postSchema);
+export default mongoose.model("Post", postSchema);
