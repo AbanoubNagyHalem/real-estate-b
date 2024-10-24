@@ -13,6 +13,23 @@ export const getAllPosts = async (req, res) => {
   }
 };
 
+export const getUserPosts = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const posts = await Post.find({ userId });
+
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({ message: "No posts found for this user." });
+    }
+
+    res.status(200).json(posts);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "An error occurred while retrieving posts.", error });
+  }
+};
+
 // Get post details by ID
 export const getPostDetails = async (req, res) => {
   const { id } = req.params;
@@ -114,6 +131,9 @@ export const addPost = async (req, res) => {
     longitude,
     type,
     property,
+    amenites,
+    location,
+    sqft,
   } = req.body;
 
   try {
@@ -130,6 +150,9 @@ export const addPost = async (req, res) => {
       longitude,
       type,
       property,
+      amenites,
+      location,
+      sqft,
       userId: req.user.id,
     });
 
@@ -148,7 +171,7 @@ export const updatePost = async (req, res) => {
   try {
     const updatedPost = await Post.findByIdAndUpdate(id, updates, {
       new: true,
-      runValidators: true, // Ensure validators are applied
+      runValidators: true,
     });
 
     if (!updatedPost) {
@@ -218,6 +241,7 @@ export const addComment = async (req, res) => {
     }
 };
 
+
 // Filter Posts
 export const getFilteredPosts = async (req, res) => {
   try {
@@ -283,6 +307,7 @@ export const getUserReviews = async (req, res) => {
           postId: post._id,
           postTitle: post.title,
           comment: comment.text,
+          commentId: comment._id,
           commentDate: comment.createdAt,
         }));
     });
@@ -294,5 +319,27 @@ export const getUserReviews = async (req, res) => {
     res.status(200).json(userComments);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching reviews', error: error.message });
+  }
+};
+
+export const deleteUserReview = async (req, res) => {
+  const { postId, commentId } = req.params;
+  
+  try {
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    post.comments = post.comments.filter(
+      (comment) => comment._id.toString() !== commentId
+    );
+
+    // Only update the comments field
+    await post.save({ validateModifiedOnly: true }); // Validates only modified fields
+
+    res.status(200).json({ message: 'Comment deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
   }
 };
